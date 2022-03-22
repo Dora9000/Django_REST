@@ -8,7 +8,7 @@ def index(request):
     return HttpResponse('Hello world')
 
 
-@api_view(['GET', 'POST', 'DELETE'])
+#@api_view(['GET', 'POST', 'DELETE'])
 def create_shipment(request):
     return HttpResponse('add shipment')
 

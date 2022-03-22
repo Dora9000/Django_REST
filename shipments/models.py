@@ -8,6 +8,9 @@ class Country(models.Model):
     """
     name = models.CharField(max_length=150)
 
+    def __str__(self):
+        return self.name
+
 
 class Shipment(models.Model):
     """
@@ -19,5 +22,9 @@ class Shipment(models.Model):
     """
     country_to = models.ForeignKey(Country, on_delete=models.PROTECT, related_name='country_to')
     country_from = models.ForeignKey(Country, on_delete=models.PROTECT, related_name='country_from')
-    date_of_departure = models.DateField(blank=True)
-    date_of_arrival = models.DateField(blank=True)
+    date_of_departure = models.DateField(blank=True, null=True)
+    date_of_arrival = models.DateField(blank=True, null=True)
+
+    def __str__(self):
+        return f'Shipment from {self.country_from} to {self.country_to}. Scheduled ' \
+               f'to {self.date_of_departure}-{self.date_of_arrival}'
