@@ -2,5 +2,3 @@ Django==3.2.12
 djangorestframework==3.13.1
 
 # pip freeze > requirements.txt
-
-PMAK-6239d050a1714902576b8c00-fde7dd4e8778185d462139ca190a35c823
