@@ -1,5 +1,7 @@
 from rest_framework import status
 from rest_framework.test import APITestCase
+import datetime as dt
+from time import sleep
 
 
 class MainTestCase(APITestCase):
@@ -85,8 +87,14 @@ class CreateShipmentTestCase(APITestCase):
         }
         response = self.client.post(f"/api/shipment/", data=data)
         self.assertEqual(status.HTTP_201_CREATED, response.status_code)
+        response = response.json()
+        created_at = dt.datetime.strptime(response['created_at'], "%Y-%m-%dT%H:%M:%S.%fZ")
+        updated_at = dt.datetime.strptime(response['updated_at'], "%Y-%m-%dT%H:%M:%S.%fZ")
+        self.assertEqual(created_at, updated_at)
         data['id'] = 1
-        self.assertEqual(data, response.json())
+        del response['created_at']  # will raise a KeyError if the key is not in the dictionary
+        del response['updated_at']
+        self.assertEqual(data, response)
 
 
 class UpdateShipmentTestCase(APITestCase):
@@ -119,7 +127,10 @@ class UpdateShipmentTestCase(APITestCase):
             "country_from": self.country_from_id
         }
         self.assertEqual(status.HTTP_200_OK, response.status_code)
-        self.assertEqual(data, response.json())
+        response = response.json()
+        del response['created_at']
+        del response['updated_at']
+        self.assertEqual(data, response)
 
     def test_shipment_get_list(self):
         self.setUp()
@@ -136,8 +147,28 @@ class UpdateShipmentTestCase(APITestCase):
         }
         response = self.client.put(f"/api/shipment/1/", data=data)
         self.assertEqual(status.HTTP_200_OK, response.status_code)
+        response = response.json()
         data['id'] = 1
-        self.assertEqual(data, response.json())
+        del response['created_at']
+        del response['updated_at']
+        self.assertEqual(data, response)
+
+    def test_shipment_update_timestamp(self):
+        updated_at = self.client.get(f"/api/shipment/1/").json()['updated_at']
+        sleep(0.5)
+        data = {
+            "date_of_departure": "2050-03-22",
+            "date_of_arrival": "2050-03-25",
+            "country_to": self.country_from_id,
+            "country_from": self.country_to_id
+        }
+        response = self.client.put(f"/api/shipment/1/", data=data)
+        self.assertEqual(status.HTTP_200_OK, response.status_code)
+        response = response.json()
+        self.assertNotEqual(updated_at, response['updated_at'])
+        old_updated_at = dt.datetime.strptime(updated_at, "%Y-%m-%dT%H:%M:%S.%fZ")
+        new_updated_at = dt.datetime.strptime(response['updated_at'], "%Y-%m-%dT%H:%M:%S.%fZ")
+        self.assertLess(old_updated_at, new_updated_at)
 
     def test_shipment_patch(self):
         data = {
